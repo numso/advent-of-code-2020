@@ -9,10 +9,10 @@ defmodule Advent.Day{{NUM}} do
   def parse(data), do: data
 
   @doc """
-    iex> sample |> parse |> part1
+    iex()> sample() |> parse() |> part1
     nil
 
-    iex> input |> parse |> part1
+    iex> input() |> parse() |> part1()
     nil
   """
   def part1(data) do
@@ -20,10 +20,10 @@ defmodule Advent.Day{{NUM}} do
   end
 
   @doc """
-    iex> sample |> parse |> part2
+    iex> sample() |> parse() |> part2()
     nil
 
-    iex> input |> parse |> part2
+    iex> input() |> parse() |> part2()
     nil
   """
   def part2(data) do
