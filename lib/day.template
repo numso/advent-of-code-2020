@@ -9,7 +9,7 @@ defmodule Advent.Day{{NUM}} do
   def parse(data), do: data
 
   @doc """
-    iex()> sample() |> parse() |> part1
+    iex> sample() |> parse() |> part1()
     nil
 
     iex> input() |> parse() |> part1()
