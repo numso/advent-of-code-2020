@@ -1,0 +1,32 @@
+defmodule Advent.Day{{NUM}} do
+  def sample do
+    """
+    """
+  end
+
+  def input, do: File.read!("inputs/{{NUM}}.txt")
+
+  def parse(data), do: data
+
+  @doc """
+    iex> sample |> parse |> part1
+    nil
+
+    iex> input |> parse |> part1
+    nil
+  """
+  def part1(data) do
+    nil
+  end
+
+  @doc """
+    iex> sample |> parse |> part2
+    nil
+
+    iex> input |> parse |> part2
+    nil
+  """
+  def part2(data) do
+    nil
+  end
+end
