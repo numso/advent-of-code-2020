@@ -5,3 +5,4 @@ https://adventofcode.com/
 - `mix advent.generate <day>`
 - `mix advent.run <day>`
 - `mix advent.run <day> <part>`
+- `mix test --seed 0`
