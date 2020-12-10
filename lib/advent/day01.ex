@@ -22,11 +22,8 @@ defmodule Advent.Day01 do
     1014624
   """
   def part1(nums) do
-    [a, b] =
-      for(a <- nums, b <- nums, do: [a, b])
-      |> Enum.find(&(Enum.sum(&1) == 2020))
-
-    a * b
+    num = Enum.find(nums, fn num -> (2020 - num) in nums end)
+    num * (2020 - num)
   end
 
   @doc """
@@ -37,10 +34,14 @@ defmodule Advent.Day01 do
     80072256
   """
   def part2(nums) do
-    [a, b, c] =
-      for(a <- nums, b <- nums, c <- nums, do: [a, b, c])
-      |> Enum.find(&(Enum.sum(&1) == 2020))
+    [num, num1] =
+      Enum.find_value(nums, fn num ->
+        case Enum.find(nums, fn num1 -> (2020 - num - num1) in nums end) do
+          nil -> nil
+          num1 -> [num, num1]
+        end
+      end)
 
-    a * b * c
+    num * num1 * (2020 - num - num1)
   end
 end
