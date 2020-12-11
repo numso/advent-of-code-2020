@@ -16,22 +16,18 @@ defmodule Advent.Day11 do
 
   def input, do: File.read!("inputs/11.txt")
 
-  def parse(data), do: String.split(data) |> Enum.map(&String.graphemes/1)
-
-  defp map_seats(data, func) do
-    Enum.with_index(data)
-    |> Enum.map(fn {row, i} ->
-      Enum.with_index(row)
-      |> Enum.map(fn {cell, j} ->
-        func.({j, i}, cell)
+  def parse(data) do
+    String.split(data)
+    |> Enum.with_index()
+    |> Enum.flat_map(fn {row, i} ->
+      String.graphemes(row)
+      |> Enum.with_index()
+      |> Enum.map(fn
+        {"L", j} -> {{j, i}, :unoccupied}
+        {".", j} -> {{j, i}, :empty}
       end)
     end)
-  end
-
-  defp get(data, {x, y}), do: Enum.at(data, y, []) |> Enum.at(x)
-
-  defp is_valid([row | _] = data, {x, y}) do
-    x >= 0 and y >= 0 and x < length(row) and y < length(data)
+    |> Enum.into(%{})
   end
 
   @doc """
@@ -53,26 +49,23 @@ defmodule Advent.Day11 do
   def part2(data), do: run_simulation(data, 5, &far/2)
 
   defp run_simulation(data, tolerance, adjacency_fn) do
-    map_seats(data, fn coord, _ -> {coord, adjacency_fn.(data, coord)} end)
-    |> List.flatten()
-    |> Enum.into(%{})
-    |> iterate(data, tolerance)
-    |> List.flatten()
-    |> Enum.count(&(&1 == "#"))
+    data2 = for {coord, cell} <- data, cell != :empty, into: %{}, do: {coord, cell}
+
+    for({coord, _} <- data, into: %{}, do: {coord, adjacency_fn.(data, coord)})
+    |> iterate(data2, tolerance)
+    |> Enum.count(fn {_, cell} -> cell == :occupied end)
   end
 
   defp iterate(adjacencies, data, tolerance) do
-    map_seats(data, fn coord, cell ->
-      Map.get(adjacencies, coord)
-      |> Enum.map(&get(data, &1))
-      |> Enum.count(&(&1 == "#"))
-      |> (fn seat_count -> {cell, seat_count} end).()
-      |> case do
-        {"L", 0} -> "#"
-        {"#", num} when num >= tolerance -> "L"
-        {val, _} -> val
+    for {coord, cell} <- data, into: %{} do
+      count = Map.get(adjacencies, coord) |> Enum.count(&(Map.get(data, &1) == :occupied))
+
+      case {cell, count} do
+        {:unoccupied, 0} -> {coord, :occupied}
+        {:occupied, num} when num >= tolerance -> {coord, :unoccupied}
+        {val, _} -> {coord, val}
       end
-    end)
+    end
     |> case do
       ^data -> data
       next -> iterate(adjacencies, next, tolerance)
@@ -81,24 +74,19 @@ defmodule Advent.Day11 do
 
   defp near(data, {x, y}) do
     for(x1 <- -1..1, y1 <- -1..1, {x1, y1} != {0, 0}, do: {x + x1, y + y1})
-    |> Enum.filter(&is_valid(data, &1))
+    |> Enum.filter(&Map.has_key?(data, &1))
   end
 
   defp far(data, {x, y} = coord) do
     near(data, coord)
-    |> Enum.flat_map(fn {a, b} = coord ->
-      case find_far_coord(data, coord, {a - x, b - y}) do
-        nil -> []
-        coord -> [coord]
-      end
-    end)
+    |> Enum.flat_map(fn {a, b} -> find_far_coord(data, {a, b}, {a - x, b - y}) end)
   end
 
   defp find_far_coord(data, {x, y} = coord, {dx, dy} = dcoord) do
-    case is_valid(data, coord) and get(data, coord) do
-      "." -> find_far_coord(data, {x + dx, y + dy}, dcoord)
-      "L" -> {x, y}
-      _ -> nil
+    case Map.get(data, coord) do
+      :empty -> find_far_coord(data, {x + dx, y + dy}, dcoord)
+      :unoccupied -> [coord]
+      nil -> []
     end
   end
 end
