@@ -26,7 +26,9 @@ defmodule Advent do
 
   defp run(day, part, input) do
     module = String.to_atom("#{__MODULE__}.Day#{day}")
-    inp = apply(module, input, [])
+    Code.ensure_compiled(module)
+    args = if function_exported?(module, input, 1), do: [part], else: []
+    inp = apply(module, input, args)
     parsed = apply(module, :parse, [inp])
     result = apply(module, part, [parsed])
     IO.puts("Day#{day}.#{part}(#{input}) = #{inspect(result)}")
