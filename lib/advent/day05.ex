@@ -50,12 +50,18 @@ defmodule Advent.Day05 do
   def decode(str) do
     {row_num, column_num} =
       str
-      |> String.replace(~r/[FL]/, "0")
-      |> String.replace(~r/[BR]/, "1")
+      |> String.graphemes()
+      |> Enum.map(fn
+        "F" -> "0"
+        "L" -> "0"
+        "B" -> "1"
+        "R" -> "1"
+      end)
+      |> Enum.join()
       |> String.split_at(7)
 
-    {row, ""} = Integer.parse(row_num, 2)
-    {column, ""} = Integer.parse(column_num, 2)
+    row = String.to_integer(row_num, 2)
+    column = String.to_integer(column_num, 2)
     row * 8 + column
   end
 end
