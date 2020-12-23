@@ -71,10 +71,10 @@ defmodule Advent.Day21 do
 
   @doc """
     iex> sample() |> parse() |> part2()
-    mxmxvkd,sqjhc,fvjkl
+    "mxmxvkd,sqjhc,fvjkl"
 
     iex> input() |> parse() |> part2()
-    thvm,jmdg,qrsczjv,hlmvqh,zmb,mrfxh,ckqq,zrgzf
+    "thvm,jmdg,qrsczjv,hlmvqh,zmb,mrfxh,ckqq,zrgzf"
   """
   def part2(data) do
     find_all_allergens(data)

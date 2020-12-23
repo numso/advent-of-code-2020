@@ -11,8 +11,11 @@ defmodule Advent.Day23 do
     iex> input() |> parse() |> part1()
     82573496
   """
-  def part1(cups) do
-    Enum.reduce(1..100, cups, fn _, acc -> move(acc, 9) end)
+  def part1([first | _] = cups) do
+    blah = init(cups, first)
+
+    Enum.reduce(1..100, {first, blah}, fn _, acc -> move(acc, 9) end)
+    |> build(9)
     |> Stream.cycle()
     |> Stream.drop_while(&(&1 !== 1))
     |> Stream.drop(1)
@@ -20,22 +23,48 @@ defmodule Advent.Day23 do
     |> Integer.undigits()
   end
 
-  def move([current | _] = cups, total) do
-    # select the 3 cups immediately clockwise of the current cup
-    removed = Stream.cycle(cups) |> Stream.drop(1) |> Enum.take(3)
-    cups = Enum.take(cups, total) |> Enum.filter(&(&1 not in removed)) |> Stream.cycle()
+  def build(_, 0), do: []
 
-    # find destination cup
-    destination = get_destination(current - 1, removed, total)
-
-    # place cups
-    i = Enum.find_index(cups, &(&1 == destination))
-    a = removed ++ (Stream.drop(cups, i + 1) |> Enum.take(total - 3))
-
-    # select new current cup
-    i = Enum.find_index(a, &(&1 == current))
-    Stream.cycle(a) |> Stream.drop(i + 1) |> Enum.take(total)
+  def build({start, cups}, length) do
+    a = Map.get(cups, start)
+    [a | build({a, cups}, length - 1)]
   end
+
+  def init([_ | rest] = nums, next) do
+    Enum.zip([nums, rest ++ [next]]) |> Enum.into(%{})
+  end
+
+  def move({current, cups}, max) do
+    {pickup, cups} = take(cups, current, 3)
+    destination = get_destination(current - 1, pickup, max)
+    cups = insert(cups, destination, pickup)
+    next_current = get_next_cup(cups, current)
+    {next_current, cups}
+  end
+
+  def take(cups, num, count) do
+    {_, pickup} =
+      Enum.reduce(1..count, {num, []}, fn _, {next, list} ->
+        a = get_next_cup(cups, next)
+        {a, list ++ [a]}
+      end)
+
+    next = get_next_cup(cups, List.last(pickup))
+    {pickup, Map.put(cups, num, next)}
+  end
+
+  def insert(cups, num, pickup) do
+    original = get_next_cup(cups, num)
+
+    {cups, last} =
+      Enum.reduce(pickup, {cups, num}, fn num2, {cups, num} ->
+        {Map.put(cups, num, num2), num2}
+      end)
+
+    Map.put(cups, last, original)
+  end
+
+  def get_next_cup(cups, num), do: Map.get(cups, num, num + 1)
 
   def get_destination(0, missing, max), do: get_destination(max, missing, max)
 
@@ -48,16 +77,13 @@ defmodule Advent.Day23 do
     149245887792
 
     iex> input() |> parse() |> part2()
-    nil
+    11498506800
   """
-  def part2(cups) do
-    cups = cups ++ Enum.to_list(10..1_000_000)
-
-    Enum.reduce(1..10_000_000, cups, fn i, acc ->
-      IO.inspect(i)
-      move(acc, 1_000_000)
-    end)
-
-    nil
+  def part2([first | _] = cups) do
+    blah = init(cups, 10) |> Map.put(1_000_000, first)
+    {_, nums} = Enum.reduce(1..10_000_000, {first, blah}, fn _, acc -> move(acc, 1_000_000) end)
+    a = get_next_cup(nums, 1)
+    b = get_next_cup(nums, a)
+    a * b
   end
 end
